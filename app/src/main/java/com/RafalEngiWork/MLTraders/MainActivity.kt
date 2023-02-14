@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val db = Firebase.firestore
+        val database = Firebase.firestore
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         binding.fab.setOnClickListener { view ->
             //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show()
 
-            db.collection("uniqCollections")
+            database.collection("uniqCollections")
                 .document("List")
                 .get()
                 .addOnSuccessListener { result ->
