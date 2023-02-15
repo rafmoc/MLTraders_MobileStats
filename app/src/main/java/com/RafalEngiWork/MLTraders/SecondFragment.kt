@@ -7,20 +7,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.RafalEngiWork.MLTraders.databinding.FragmentSecondBinding
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-/**
- * A simple [Fragment] subclass as the second destination in the navigation.
- */
 class SecondFragment : Fragment() {
 
     private var _binding: FragmentSecondBinding? = null
     val database = Firebase.firestore
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
+    private lateinit var mLRunAdapter: MLRunAdapter
+    private lateinit var rvFirebaseDataset: RecyclerView
+    private lateinit var mLRunsList: ArrayList<MLRun>
+
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -42,10 +43,21 @@ class SecondFragment : Fragment() {
         database.collection("uniqCollections").document("List").get()
             .addOnSuccessListener { result ->
                 Log.d("FireLog", "${result.id} => ${result.data?.keys}")
+                binding.textviewSecond.text = result.data?.keys.toString();
             }.addOnFailureListener { exception ->
                 Log.d("FireLog", "Error getting documents: ", exception)
             }
 
+        rvFirebaseDataset = view.findViewById(R.id.recyclerViewFirebaseDataset)
+        rvFirebaseDataset.layoutManager = LinearLayoutManager(context)
+
+        val mlRun = MLRun("Test", 5, 10, 15, 20, 25, 30)
+        val mLRuns : MutableList<MLRun> = mutableListOf<MLRun>()
+
+        mLRuns.add(mlRun)
+
+        mLRunAdapter = MLRunAdapter(mLRuns)
+        rvFirebaseDataset.adapter = mLRunAdapter
     }
 
     override fun onDestroyView() {
