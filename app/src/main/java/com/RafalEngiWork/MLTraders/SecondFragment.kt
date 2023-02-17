@@ -10,8 +10,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.RafalEngiWork.MLTraders.databinding.FragmentSecondBinding
+import com.RafalEngiWork.MLTraders.regexps.Date
+import com.RafalEngiWork.MLTraders.regexps.getDateFromTimestamp
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.util.concurrent.atomic.AtomicInteger
 
 class SecondFragment : Fragment() {
 
@@ -20,7 +25,6 @@ class SecondFragment : Fragment() {
 
     private lateinit var mLRunAdapter: MLRunAdapter
     private lateinit var rvFirebaseDataset: RecyclerView
-    private lateinit var mLRunsList: ArrayList<MLRun>
 
     private val binding get() = _binding!!
 
@@ -40,24 +44,69 @@ class SecondFragment : Fragment() {
             findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
         }
 
-        database.collection("uniqCollections").document("List").get()
+        database.collection("uniqCollections").document("List")
+            .get()
             .addOnSuccessListener { result ->
-                Log.d("FireLog", "${result.id} => ${result.data?.keys}")
-                binding.textviewSecond.text = result.data?.keys.toString();
+                firebaseDataToRV(result)
             }.addOnFailureListener { exception ->
                 Log.d("FireLog", "Error getting documents: ", exception)
             }
 
         rvFirebaseDataset = view.findViewById(R.id.recyclerViewFirebaseDataset)
         rvFirebaseDataset.layoutManager = LinearLayoutManager(context)
+    }
 
-        val mlRun = MLRun("Test", 5, 10, 15, 20, 25, 30)
-        val mLRuns : MutableList<MLRun> = mutableListOf<MLRun>()
+    private fun firebaseDataToRV(result: DocumentSnapshot) {
+        result.data?.let { data ->
+            Log.d("FireLog", "Collections: ${result.id} => ${data.keys}")
 
-        mLRuns.add(mlRun)
+            var mlRun: MLRun
+            val mLRuns: MutableList<MLRun> = mutableListOf<MLRun>()
+            var counter: AtomicInteger = AtomicInteger(0)
+            data.keys.forEach { collectionName ->
+                database.collection(collectionName)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        val listOfAll = listOfAllFireDocuments(result)
+                        val mappedData = listOfAll.distinctBy { it.toString() }.map { group ->
+                            listOfAll.filter { it.toString() == group.toString() }
+                                .sortedBy { it.steps }
+                        }
 
-        mLRunAdapter = MLRunAdapter(mLRuns)
-        rvFirebaseDataset.adapter = mLRunAdapter
+                        Log.d("FireLog", collectionName)
+                        for (group in mappedData) {
+                            val steps = (group.last().data?.get("True Steps") ?: 1)
+                            mlRun = MLRun(
+                                collectionName + ": " + group.last().toString(),
+                                (group.last().steps ?: 1) / steps,
+                                steps,
+                                group.last().data?.get("creditBalance"),
+                                group.last().data?.get("earnedCredits"),
+                                group.last().data?.get("sameCredits"),
+                                group.last().data?.get("lostCredits")
+                            )
+                            mLRuns.add(mlRun)
+
+                            if(counter.incrementAndGet()==5)
+                            {
+                                mLRunAdapter = MLRunAdapter(mLRuns)
+                                rvFirebaseDataset.adapter = mLRunAdapter
+                            }
+                        }
+
+                    }.addOnFailureListener { exception ->
+                        Log.d("FireLog", "Error getting documents: ", exception)
+                    }
+            }
+        } ?: run {
+            Log.d("FireLog", "Data missing! Data is Null.")
+        }
+    }
+
+    private fun listOfAllFireDocuments(result: QuerySnapshot): List<Date> {
+        return result.map { document ->
+            getDateFromTimestamp(document.id, document.data)
+        }
     }
 
     override fun onDestroyView() {
