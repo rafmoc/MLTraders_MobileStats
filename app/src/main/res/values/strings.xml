@@ -6,6 +6,7 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <string name="refresh">Refresh</string>
     <string name="open">Open</string>
 
     <string name="AppName_first_fragment">MLTradersMobile</string>

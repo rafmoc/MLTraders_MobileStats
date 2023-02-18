@@ -40,10 +40,21 @@ class SecondFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.buttonSecond.setOnClickListener {
+        rvFirebaseDataset = view.findViewById(R.id.recyclerViewFirebaseDataset)
+        rvFirebaseDataset.layoutManager = LinearLayoutManager(context)
+
+        binding.buttonGoBack.setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
         }
 
+        binding.buttonRefresh.setOnClickListener {
+            firebaseGetDataAndAddToRV()
+        }
+
+        firebaseGetDataAndAddToRV()
+    }
+
+    private fun firebaseGetDataAndAddToRV() {
         database.collection("uniqCollections").document("List")
             .get()
             .addOnSuccessListener { result ->
@@ -51,9 +62,6 @@ class SecondFragment : Fragment() {
             }.addOnFailureListener { exception ->
                 Log.d("FireLog", "Error getting documents: ", exception)
             }
-
-        rvFirebaseDataset = view.findViewById(R.id.recyclerViewFirebaseDataset)
-        rvFirebaseDataset.layoutManager = LinearLayoutManager(context)
     }
 
     private fun firebaseDataToRV(result: DocumentSnapshot) {
@@ -77,7 +85,7 @@ class SecondFragment : Fragment() {
                         for (group in mappedData) {
                             val steps = (group.last().data?.get("True Steps") ?: 1)
                             mlRun = MLRun(
-                                collectionName + ": " + group.last().toString(),
+                                collectionName + ":\n" + group.last().toString(),
                                 (group.last().steps ?: 1) / steps,
                                 steps,
                                 group.last().data?.get("creditBalance"),
