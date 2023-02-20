@@ -48,6 +48,7 @@ class SecondFragment : Fragment() {
         }
 
         binding.buttonRefresh.setOnClickListener {
+            mLRunAdapter.clearMLRuns()
             firebaseGetDataAndAddToRV()
         }
 
