@@ -16,20 +16,24 @@ class StatisticsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        val nameOfData: String? = arguments?.getString("Name")
-        var mLRuns: MLRuns = MLProcessor.mLObjects.firstOrNull { ml ->
-            ml.name == nameOfData
-        }!!
-
-        
 
         _binding = FragmentStatisticsBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val nameOfData: String? = arguments?.getString("Name")
+        var mLRuns: MLRuns? = MLProcessor.mLObjects.firstOrNull { ml ->
+            ml.name == nameOfData
+        }
+
+        binding.mLRunTopText.text = nameOfData
+        binding.statsView1.text = mLRuns?.mLRuns?.last()?.steps.toString()
+        binding.statsView2.text = mLRuns?.mLRuns?.last()?.creditBalance.toString()
+        binding.statsView3.text = mLRuns?.mLRuns?.last()?.earnedCredits.toString()
+        binding.statsView4.text = mLRuns?.mLRuns?.last()?.lostCredits.toString()
 
     }
 

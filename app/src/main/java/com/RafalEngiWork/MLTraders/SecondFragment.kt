@@ -93,10 +93,10 @@ class SecondFragment : Fragment() {
                                 collectionName + ":\n" + group.last().toString(),
                                 (group.last().steps ?: 1) / steps,
                                 steps,
-                                group.last().data?.get("creditBalance"),
-                                group.last().data?.get("earnedCredits"),
-                                group.last().data?.get("sameCredits"),
-                                group.last().data?.get("lostCredits")
+                                group.last().data?.get("Credits Balance"),
+                                group.last().data?.get("Earned Credits"),
+                                group.last().data?.get("Same Credits"),
+                                group.last().data?.get("Lost Credits")
                             )
                             mLRuns.add(mlRun)
 
@@ -109,15 +109,15 @@ class SecondFragment : Fragment() {
                                     collectionName + ":\n" + mlData.toString(),
                                     (mlData.steps ?: 1) / steps,
                                     mlData.data?.get("True Steps") ?: 1,
-                                    mlData.data?.get("creditBalance"),
-                                    mlData.data?.get("earnedCredits"),
-                                    mlData.data?.get("sameCredits"),
-                                    mlData.data?.get("lostCredits")
+                                    mlData.data?.get("Credits Balance"),
+                                    mlData.data?.get("Earned Credits"),
+                                    mlData.data?.get("Same Credits"),
+                                    mlData.data?.get("Lost Credits")
                                 )
                                 mLRunsData.mLRuns.add(mlRun)
                             }
+                            MLProcessor.addMLRun(mLRunsData)
                         }
-                        MLProcessor.addMLRun(mLRunsData)
                         if(counter.incrementAndGet()==data.keys.size)
                         {
                             mLRunAdapter = MLRunAdapter(mLRuns)

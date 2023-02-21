@@ -31,7 +31,7 @@
     <fragment
         android:id="@+id/statisticsFragment"
         android:name="com.RafalEngiWork.MLTraders.StatisticsFragment"
-        android:label="StatisticsFragment" >
+        android:label="Statistics" >
         <action
             android:id="@+id/action_statisticsFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
