@@ -1,5 +1,7 @@
 package com.RafalEngiWork.MLTraders
 
+import java.util.concurrent.ConcurrentLinkedQueue
+
 data class MLRun(
     val name: String?,
     val iterations: Int?,
@@ -9,3 +11,15 @@ data class MLRun(
     val sameCredits: Int?,
     val lostCredits: Int?
 )
+
+data class MLRuns(
+    var name: String,
+    var mLRuns: MutableList<MLRun>
+)
+
+object MLProcessor{
+    val mLObjects:  ConcurrentLinkedQueue<MLRuns> = ConcurrentLinkedQueue<MLRuns>()
+    fun addMLRun(mLRuns: MLRuns){
+        mLObjects.add(mLRuns)
+    }
+}

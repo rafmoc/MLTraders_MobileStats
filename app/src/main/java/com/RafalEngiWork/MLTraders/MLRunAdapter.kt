@@ -1,11 +1,13 @@
 package com.RafalEngiWork.MLTraders
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 
 class MLRunAdapter(
@@ -46,13 +48,12 @@ class MLRunAdapter(
         holder.title.text = currentMLRun.name
         holder.iterations.text = currentMLRun.iterations.toString()
 
-        holder.itemView.setOnClickListener(
-            Navigation.createNavigateOnClickListener(R.id.action_SecondFragment_to_statisticsFragment)
-        )
+        val bundle = Bundle()
+        bundle.putString("Name", currentMLRun.name)
 
-        /*holder.button.setOnClickListener {
-            findNavController().navigate(R.id.action_SecondFragment_to_statisticsFragment)
-        }*/
+        holder.button.setOnClickListener {
+            holder.button.findNavController().navigate(R.id.action_SecondFragment_to_statisticsFragment, bundle)
+        }
     }
 
     override fun getItemCount(): Int {

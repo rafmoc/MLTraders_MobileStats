@@ -70,8 +70,12 @@ class SecondFragment : Fragment() {
             Log.d("FireLog", "Collections: ${result.id} => ${data.keys}")
 
             var mlRun: MLRun
+            var mLRunsData: MLRuns = MLRuns(
+                "none",
+                mutableListOf()
+            )
             val mLRuns: MutableList<MLRun> = mutableListOf<MLRun>()
-            var counter: AtomicInteger = AtomicInteger(0)
+            val counter: AtomicInteger = AtomicInteger(0)
             data.keys.forEach { collectionName ->
                 database.collection(collectionName)
                     .get()
@@ -96,11 +100,28 @@ class SecondFragment : Fragment() {
                             )
                             mLRuns.add(mlRun)
 
-                            if(counter.incrementAndGet()==5)
-                            {
-                                mLRunAdapter = MLRunAdapter(mLRuns)
-                                rvFirebaseDataset.adapter = mLRunAdapter
+                            mLRunsData = MLRuns(
+                                collectionName + ":\n" + group.last().toString(),
+                                mutableListOf()
+                            )
+                            group.forEach { mlData ->
+                                mlRun = MLRun(
+                                    collectionName + ":\n" + mlData.toString(),
+                                    (mlData.steps ?: 1) / steps,
+                                    mlData.data?.get("True Steps") ?: 1,
+                                    mlData.data?.get("creditBalance"),
+                                    mlData.data?.get("earnedCredits"),
+                                    mlData.data?.get("sameCredits"),
+                                    mlData.data?.get("lostCredits")
+                                )
+                                mLRunsData.mLRuns.add(mlRun)
                             }
+                        }
+                        MLProcessor.addMLRun(mLRunsData)
+                        if(counter.incrementAndGet()==data.keys.size)
+                        {
+                            mLRunAdapter = MLRunAdapter(mLRuns)
+                            rvFirebaseDataset.adapter = mLRunAdapter
                         }
 
                     }.addOnFailureListener { exception ->
