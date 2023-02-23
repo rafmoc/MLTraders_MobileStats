@@ -1,12 +1,11 @@
 package com.RafalEngiWork.MLTraders
 
-import android.graphics.Color
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.graphics.toColor
 import androidx.fragment.app.Fragment
 import com.RafalEngiWork.MLTraders.databinding.FragmentStatisticsBinding
 import com.jjoe64.graphview.GraphView
@@ -20,6 +19,7 @@ class StatisticsFragment : Fragment() {
     private val binding get() = _binding!!
 
     lateinit var lineGraphView: GraphView
+    lateinit var lineGraphView2: GraphView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -37,48 +37,99 @@ class StatisticsFragment : Fragment() {
             ml.name == nameOfData
         }
 
-        binding.mLRunTopText.text = nameOfData
-        binding.statsView1.text = mLRuns?.mLRuns?.last()?.steps.toString()
-        binding.statsView2.text = mLRuns?.mLRuns?.last()?.creditBalance.toString()
-        binding.statsView3.text = mLRuns?.mLRuns?.last()?.earnedCredits.toString()
-        binding.statsView4.text = mLRuns?.mLRuns?.last()?.lostCredits.toString()
+        setGeneralInformations(nameOfData, mLRuns)
+        setEarningsAndLosesChart(mLRuns)
+    }
 
+    @SuppressLint("SetTextI18n")
+    private fun setGeneralInformations(
+        nameOfData: String?, mLRuns: MLRuns?
+    ) {
+        mLRuns?.mLRuns?.last()?.let { lastRun ->
+            binding.mLRunTopText.text = nameOfData
+            binding.statsView1Value.text = "${lastRun.steps}"
+            binding.statsView2Value.text = "${lastRun.earnedCredits + lastRun.lostCredits + lastRun.sameCredits}"
+            binding.statsView3Value.text = "${lastRun.creditBalance}"
+            binding.statsView4Value.text = "${lastRun.earnedCredits}"
+            binding.statsView5Value.text = "${lastRun.lostCredits}"
+            binding.statsView6Value.text = "${lastRun.sameCredits}"
+        }
+    }
+
+    private fun setEarningsAndLosesChart(mLRuns: MLRuns?) {
         lineGraphView = binding.idGraphView
+        lineGraphView2 = binding.idGraphView2
 
-        val series: LineGraphSeries<DataPoint> = LineGraphSeries(
-            arrayOf(
-                // on below line we are adding
-                // each point on our x and y axis.
-                DataPoint(0.0, 1.0),
-                DataPoint(1.0, 3.0),
-                DataPoint(2.0, 4.0),
-                DataPoint(3.0, 9.0),
-                DataPoint(4.0, 6.0),
-                DataPoint(5.0, 3.0),
-                DataPoint(6.0, 6.0),
-                DataPoint(7.0, 1.0),
-                DataPoint(8.0, 2.0)
+        val earnedPoints: Array<DataPoint>? = mLRuns?.mLRuns?.mapIndexed { index, mlRun ->
+            intToDataPoint(
+                (index + 1), mlRun.earnedCredits
             )
-        )
+        }?.toTypedArray()
 
-        lineGraphView.animate()
+        val lostPoints: Array<DataPoint>? = mLRuns?.mLRuns?.mapIndexed { index, mlRun ->
+            intToDataPoint(
+                (index + 1), mlRun.lostCredits
+            )
+        }?.toTypedArray()
 
-        // on below line we are setting scrollable
-        // for point graph view
-        lineGraphView.viewport.isScrollable = true
+        val creditsBalancePoints: Array<DataPoint>? = mLRuns?.mLRuns?.mapIndexed { index, mlRun ->
+            intToDataPoint((index + 1), normalizeToHundred(mlRun.creditBalance,
+                mLRuns.mLRuns.minOf { it.creditBalance },
+                mLRuns.mLRuns.maxOf { it.creditBalance }).toInt()
+            )
+        }?.toTypedArray()
+
+        val creditsBalancePointsTEST: List<Int>? = mLRuns?.mLRuns?.mapIndexed { index, mlRun ->
+            intToDataPoint((index + 1), normalizeToHundred(mlRun.creditBalance,
+                mLRuns.mLRuns.minOf { it.creditBalance },
+                mLRuns.mLRuns.maxOf { it.creditBalance }).toInt()
+            )
+            Log.d("FireLog", normalizeToHundred(mlRun.creditBalance,
+                mLRuns.mLRuns.minOf { it.creditBalance },
+                mLRuns.mLRuns.maxOf { it.creditBalance }).toString()
+            )
+            Log.d("FireLog", mlRun.creditBalance.toString())
+            Log.d("FireLog", mLRuns.mLRuns.minOf { it.creditBalance }.toString())
+            Log.d("FireLog", mLRuns.mLRuns.maxOf { it.creditBalance }.toString())
+        }
+
+        val earnSeries: LineGraphSeries<DataPoint> = LineGraphSeries(earnedPoints)
+        earnSeries.color = resources.getColor(R.color.primary_700)
+
+        val lostSeries: LineGraphSeries<DataPoint> = LineGraphSeries(lostPoints)
+        lostSeries.color = resources.getColor(R.color.complementary_700)
+
+        val creditsBalanceSeries: LineGraphSeries<DataPoint> = LineGraphSeries(creditsBalancePoints)
+        creditsBalanceSeries.color = resources.getColor(R.color.complementary_700)
+
+        lineGraphView.addSeries(earnSeries)
+        lineGraphView.addSeries(lostSeries)
+        lineGraphView2.addSeries(creditsBalanceSeries)
+
+        lineGraphView.viewport.backgroundColor = resources.getColor(R.color.complementary_200)
+        lineGraphView2.viewport.backgroundColor = resources.getColor(R.color.primary_200)
+
         lineGraphView.viewport.isScalable = true
-        lineGraphView.viewport.setScalableY(true)
-        lineGraphView.viewport.setScrollableY(true)
+        lineGraphView2.viewport.isScalable = true
 
-        //series.color = R.color.white
-
-        lineGraphView.addSeries(series)
-        lineGraphView.viewport.backgroundColor = R.color.complementary_200
-
+        /*
+            lineGraphView.viewport.isScrollable = true
+            lineGraphView.viewport.setScrollableY(true)
+            lineGraphView.animate()
+            lineGraphView.viewport.setScalableY(true)
+        */
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun normalizeToHundred(value: Int, min: Int, max: Int): Float {
+        return (((value - min) / (max - min).toFloat()) * 100) - 50
+    }
+
+    private fun intToDataPoint(a: Int, b: Int): DataPoint {
+        return DataPoint(a.toDouble(), b.toDouble())
     }
 }

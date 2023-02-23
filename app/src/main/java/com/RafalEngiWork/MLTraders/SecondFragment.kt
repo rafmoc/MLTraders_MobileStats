@@ -48,7 +48,10 @@ class SecondFragment : Fragment() {
         }
 
         binding.buttonRefresh.setOnClickListener {
-            mLRunAdapter.clearMLRuns()
+            if(this::mLRunAdapter.isInitialized){
+                mLRunAdapter.clearMLRuns()
+            }
+
             firebaseGetDataAndAddToRV()
         }
 
@@ -93,10 +96,10 @@ class SecondFragment : Fragment() {
                                 collectionName + ":\n" + group.last().toString(),
                                 (group.last().steps ?: 1) / steps,
                                 steps,
-                                group.last().data?.get("Credits Balance"),
-                                group.last().data?.get("Earned Credits"),
-                                group.last().data?.get("Same Credits"),
-                                group.last().data?.get("Lost Credits")
+                                group.last().data?.get("Credits Balance")?:0,
+                                group.last().data?.get("Earned Credits")?:0,
+                                group.last().data?.get("Same Credits")?:0,
+                                group.last().data?.get("Lost Credits")?:0
                             )
                             mLRuns.add(mlRun)
 
@@ -109,10 +112,10 @@ class SecondFragment : Fragment() {
                                     collectionName + ":\n" + mlData.toString(),
                                     (mlData.steps ?: 1) / steps,
                                     mlData.data?.get("True Steps") ?: 1,
-                                    mlData.data?.get("Credits Balance"),
-                                    mlData.data?.get("Earned Credits"),
-                                    mlData.data?.get("Same Credits"),
-                                    mlData.data?.get("Lost Credits")
+                                    mlData.data?.get("Credits Balance")?: 0,
+                                    mlData.data?.get("Earned Credits")?: 0,
+                                    mlData.data?.get("Same Credits")?: 0,
+                                    mlData.data?.get("Lost Credits")?: 0
                                 )
                                 mLRunsData.mLRuns.add(mlRun)
                             }
