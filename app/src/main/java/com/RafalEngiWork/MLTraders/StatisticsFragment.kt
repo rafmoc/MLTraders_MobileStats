@@ -126,6 +126,8 @@ class StatisticsFragment : Fragment() {
     }
 
     private fun normalizeToHundred(value: Int, min: Int, max: Int): Float {
+        if(max < 0)
+            return (((value - min) / (max - min).toFloat()) * 100) - 150
         return (((value - min) / (max - min).toFloat()) * 100) - 50
     }
 
